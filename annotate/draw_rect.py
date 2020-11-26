@@ -1,50 +1,69 @@
+"""/***************************************************************************
+
+This function helps to draw bounding boxes in QGIS
+                              -------------------
+        begin                : 2020-04-21
+        git sha              : $Format:%H$
+        copyright            : (C) 2020 by sonu dileep
+        email                : sonudilp@colostate.edu
+ ***************************************************************************/"""
+
 from __future__ import print_function
 from builtins import str
 from builtins import range
-
-from qgis.gui import QgsMapTool, QgsRubberBand, QgsMapToolEmitPoint, \
-    QgsProjectionSelectionDialog
 from qgis.core import QgsWkbTypes, QgsPointXY
 
 from qgis.PyQt.QtCore import Qt, QCoreApplication, pyqtSignal, QPoint
 from qgis.PyQt.QtWidgets import QDialog, QLineEdit, QDialogButtonBox, \
     QGridLayout, QLabel, QGroupBox, QVBoxLayout, QComboBox, QPushButton, \
     QInputDialog
-from qgis.PyQt.QtGui import QDoubleValidator, QIntValidator, QKeySequence
-
 from math import sqrt, pi, cos, sin
-from qgis.PyQt.QtGui import QColor
-from qgis.core import QgsRectangle
-	
-from qgis.core import QgsRectangle, QgsFeature, QgsVectorLayer, QgsPoint, QgsGeometry, QgsFillSymbol
-from qgis.PyQt.QtGui import (
-    QColor,
-)
-
-
-from qgis.PyQt.QtCore import Qt, QRectF
-
-from qgis.core import (
+from qgis.core import (QgsRectangle, QgsFeature, QgsVectorLayer, QgsPoint, QgsGeometry, QgsFillSymbol,
+    QgsGeometry,
+    QgsMapSettings,
+    QgsPrintLayout,
+    QgsMapSettings,
+    QgsMapRendererParallelJob,
+    QgsLayoutItemLabel,
+    QgsLayoutItemLegend,
+    QgsLayoutItemMap,
+    QgsLayoutItemPolygon,
+    QgsLayoutItemScaleBar,
+    QgsLayoutExporter,
+    QgsLayoutItem,
+    QgsLayoutPoint,
+    QgsLayoutSize,
+    QgsUnitTypes,
+    QgsProject,
+    QgsFillSymbol,
     QgsVectorLayer,
     QgsPoint,
     QgsPointXY,
     QgsProject,
     QgsGeometry,
-    QgsMapRendererJob,
-)
+    QgsMapRendererJob)
 
-from qgis.gui import (
+from qgis.PyQt.QtGui import (QDoubleValidator, QIntValidator, QKeySequence,
+    QPolygonF,
+    QColor)
+from qgis.PyQt.QtCore import (Qt,
+    QPointF,
+    QRectF,
+    QSize)
+from qgis.gui import (QgsMapTool, QgsRubberBand, QgsMapToolEmitPoint,
+    QgsProjectionSelectionDialog,
     QgsMapCanvas,
     QgsVertexMarker,
     QgsMapCanvasItem,
-    QgsRubberBand,
-)
-
+    QgsRubberBand)
 
 
 class RectangleMapTool(QgsMapToolEmitPoint):
+"""Used to draw bounding boxes in QGIS"""
+
   selectionDone = pyqtSignal()
   move = pyqtSignal()
+
   def __init__(self,canvas,name):
     self.canvas = canvas
     self.name = name
@@ -61,17 +80,20 @@ class RectangleMapTool(QgsMapToolEmitPoint):
 
 
   def reset(self):
+    """reset the drawing"""
     self.startPoint = self.endPoint = None
     self.isEmittingPoint = False
     self.rubberBand.reset(True)
 
   def canvasPressEvent(self, e):
+    """Activates on mouse click when user starts drawing the bounding box"""
     self.startPoint = self.toMapCoordinates(e.pos())
     self.endPoint = self.startPoint
     self.isEmittingPoint = True
     #self.showRect(self.startPoint, self.endPoint)
 
   def canvasReleaseEvent(self, e):
+    """Activates on mouse release when user is done with drawing"""
     self.isEmittingPoint = False
     r = self.rectangle()
     if r is not None:
@@ -80,13 +102,14 @@ class RectangleMapTool(QgsMapToolEmitPoint):
            )
 
   def canvasMoveEvent(self, e):
+    """Tracks the movement of mouse to find the size of bounding box"""
     if not self.isEmittingPoint:
       return
     self.endPoint = self.toMapCoordinates(e.pos())
-    self.showRect(self.startPoint, self.endPoint) # important code for displaying rectangle
+    self.showRect(self.startPoint, self.endPoint) 
 
   def showRect(self, startPoint, endPoint):
-    #self.rubberBand.reset(QGis.Polygon)
+    """Shows the drawn rectangle"""
     self.rubberBand.reset(QgsWkbTypes.PolygonGeometry)
     if startPoint.x() == endPoint.x() or startPoint.y() == endPoint.y():
       return
@@ -103,9 +126,9 @@ class RectangleMapTool(QgsMapToolEmitPoint):
     self.rubberBand.addPoint(point2, False)
     self.rubberBand.addPoint(point3, False)
     self.rubberBand.addPoint(point4, True)    # true to update canvas
-    #self.rubberBand.show()
 
   def rectangle(self):
+    """Specify the coordinate system and properties of rectangle(Color, thickness)"""
     if self.startPoint is None or self.endPoint is None:
       return None
     elif (self.startPoint.x() == self.endPoint.x() or \
@@ -127,12 +150,13 @@ class RectangleMapTool(QgsMapToolEmitPoint):
     return rect
 
   def deactivate(self):
+    """Deactivate Rubberband in QGIS"""
     QgsMapTool.deactivate(self)
     self.deactivated.emit()
     self.rubberBand.reset(True)
 
-  def remove(self):
-    self.canvas.scene().removeItem(self.rubberBand)
+#  def remove(self):
+#    self.canvas.scene().removeItem(self.rubberBand)
 
 
 
