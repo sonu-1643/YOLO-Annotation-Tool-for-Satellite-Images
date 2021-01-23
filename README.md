@@ -6,4 +6,4 @@ How it works ?:
    3. Click on Save and Next, after annotating at a particular location.
    4. Click on Empty to save an image without any annotations.
 
-If you need help or more information contact me at :- sonud13157@gmail.com
+If you need help or more information contact me at :- sonudileep@gmail.com
